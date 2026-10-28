@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<flowgorithm fileversion="3.0">
+<attributes>
+<attribute name="name" value="Агаарын чанар (PM2.5)"/>
+<attribute name="authors" value=""/>
+<attribute name="about" value="Сэдэв №5: 7 өдрийн PM2.5 → AQI ангилал, тэмдэг, хамгийн бохир 3 өдөр"/>
+</attributes>
+<function name="Main" type="None" variable="">
+<parameters/>
+<body>
+<comment text="1. Хувьсагч зарлах"/>
+<declare name="pm" type="Real" array="True" size="7"/>
+<declare name="day" type="Integer" array="True" size="7"/>
+<declare name="i, j, tmpD" type="Integer" array="False" size=""/>
+<declare name="tmpP" type="Real" array="False" size=""/>
+<declare name="cat, mark" type="String" array="False" size=""/>
+<comment text="2. 7 өдрийн PM2.5 оруулах + шалгах (дүрэм: 0-1000)"/>
+<for variable="i" start="0" end="6" direction="inc" step="1">
+<output expression="&quot;Өдөр &quot; &amp; (i + 1) &amp; &quot; PM2.5 (0-1000):&quot;" newline="True"/>
+<input variable="pm[i]"/>
+<while expression="pm[i] &lt; 0 or pm[i] &gt; 1000">
+<output expression="&quot;Буруу утга! 0-1000 хооронд оруулна уу:&quot;" newline="True"/>
+<input variable="pm[i]"/>
+</while>
+<assign variable="day[i]" expression="i + 1"/>
+</for>
+<comment text="3. Хүснэгт: функц дуудаж ангилал, тэмдэг авна"/>
+<output expression="&quot;Өдөр | PM2.5 | Ангилал | Тэмдэг&quot;" newline="True"/>
+<for variable="i" start="0" end="6" direction="inc" step="1">
+<assign variable="cat" expression="Category(pm[i])"/>
+<assign variable="mark" expression="Mark(pm[i])"/>
+<output expression="day[i] &amp; &quot; | &quot; &amp; pm[i] &amp; &quot; | &quot; &amp; cat &amp; &quot; | &quot; &amp; mark" newline="True"/>
+</for>
+<comment text="4. Эрэмбэлэх (bubble sort, ихээс бага): хөрш хоёрыг харьцуулж, зүүн нь бага бол солино. pm болон day хамт солигдоно."/>
+<for variable="i" start="0" end="5" direction="inc" step="1">
+<for variable="j" start="0" end="5 - i" direction="inc" step="1">
+<if expression="pm[j] &lt; pm[j + 1]">
+<then>
+<assign variable="tmpP" expression="pm[j]"/>
+<assign variable="pm[j]" expression="pm[j + 1]"/>
+<assign variable="pm[j + 1]" expression="tmpP"/>
+<assign variable="tmpD" expression="day[j]"/>
+<assign variable="day[j]" expression="day[j + 1]"/>
+<assign variable="day[j + 1]" expression="tmpD"/>
+</then>
+<else/>
+</if>
+</for>
+</for>
+<comment text="5. Хамгийн бохир 3 өдөр"/>
+<output expression="&quot;Хамгийн бохир 3 өдөр:&quot;" newline="True"/>
+<for variable="i" start="0" end="2" direction="inc" step="1">
+<output expression="(i + 1) &amp; &quot;. Өдөр &quot; &amp; day[i] &amp; &quot; — &quot; &amp; pm[i]" newline="True"/>
+</for>
+</body>
+</function>
+<function name="Category" type="String" variable="c">
+<parameters>
+<parameter name="p" type="Real" array="False"/>
+</parameters>
+<body>
+<comment text="Функц 1: PM2.5 утгаас AQI ангилал буцаана (US EPA 2024 хил)"/>
+<declare name="c" type="String" array="False" size=""/>
+<if expression="p &lt;= 9">
+<then>
+<assign variable="c" expression="&quot;Сайн&quot;"/>
+</then>
+<else>
+<if expression="p &lt;= 35.4">
+<then>
+<assign variable="c" expression="&quot;Дунд зэрэг&quot;"/>
+</then>
+<else>
+<if expression="p &lt;= 55.4">
+<then>
+<assign variable="c" expression="&quot;Эмзэг бүлэгт хортой&quot;"/>
+</then>
+<else>
+<if expression="p &lt;= 125.4">
+<then>
+<assign variable="c" expression="&quot;Хортой&quot;"/>
+</then>
+<else>
+<if expression="p &lt;= 225.4">
+<then>
+<assign variable="c" expression="&quot;Маш хортой&quot;"/>
+</then>
+<else>
+<assign variable="c" expression="&quot;Аюултай&quot;"/>
+</else>
+</if>
+</else>
+</if>
+</else>
+</if>
+</else>
+</if>
+</else>
+</if>
+</body>
+</function>
+<function name="Mark" type="String" variable="m">
+<parameters>
+<parameter name="p" type="Real" array="False"/>
+</parameters>
+<body>
+<comment text="Функц 2: тэмдэг буцаана. ! = маш хортой ба түүнээс дээш, * = 35.4-өөс их"/>
+<declare name="m" type="String" array="False" size=""/>
+<if expression="p &gt; 125.4">
+<then>
+<assign variable="m" expression="&quot;!&quot;"/>
+</then>
+<else>
+<if expression="p &gt; 35.4">
+<then>
+<assign variable="m" expression="&quot;*&quot;"/>
+</then>
+<else>
+<assign variable="m" expression="&quot;&quot;"/>
+</else>
+</if>
+</else>
+</if>
+</body>
+</function>
+</flowgorithm>
